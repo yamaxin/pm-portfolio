@@ -1201,6 +1201,13 @@ const PE = (() => {
   // 开启 / 关闭编辑模式
   function toggle() {
     active = !active;
+    if (active) {
+      const initKeys = ['listInit','projInit','toolInit','thinkInit','careerInit',
+        'growthInit','ghGridInit','ghInit','tagInit','tagDelInit','protoInit'];
+      document.querySelectorAll('*').forEach(el => {
+        initKeys.forEach(k => { if (el.dataset[k]) delete el.dataset[k]; });
+      });
+    }
     document.body.classList.toggle('pe-edit-active', active);
     document.getElementById('pe-toolbar').classList.toggle('is-editing', active);
     document.getElementById('pe-status').textContent = active ? '编辑模式' : '预览模式';
@@ -1279,7 +1286,9 @@ const PE = (() => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = '张三-产品经理作品集.html';
+        const nameEl = document.querySelector('[data-field="name"]');
+        const personName = nameEl ? nameEl.textContent.trim() : '产品经理';
+        a.download = personName + '-产品经理作品集.html';
         document.body.appendChild(a);
         a.click();
         setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
@@ -1666,12 +1675,21 @@ window.addEventListener('scroll', () => {
     if (!grid || grid.dataset.listInit) return;
     grid.dataset.listInit = '1';
 
-    grid.querySelectorAll('.market-card').forEach(card => {
-      addDelBtn(card, () => {
+    function addMktDel(card) {
+      if (card.querySelector('.pe-del-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'pe-del-btn';
+      btn.textContent = '×';
+      btn.setAttribute('contenteditable', 'false');
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); e.preventDefault();
         if (grid.querySelectorAll('.market-card').length > 1) card.remove();
         else PE._toast('⚠️ 至少保留一条');
       });
-    });
+      card.setAttribute('data-deletable', '1');
+      card.appendChild(btn);
+    }
+    grid.querySelectorAll('.market-card').forEach(card => { addMktDel(card); });
 
     const addBtn = makeAddBtn('+ 添加市场洞察', () => {
       const tpl = grid.querySelector('.market-card').cloneNode(true);
@@ -1977,15 +1995,12 @@ window.addEventListener('scroll', () => {
       if(card.dataset.ghInit) return;
       card.dataset.ghInit = '1';
 
-      // 非编辑模式点击正常跳转
+      // 编辑模式下阻止卡片跳转（文字仍可点击编辑）
       card.addEventListener('click', function(e){
-        if(!document.body.classList.contains('pe-edit-active')){
-          // 正常跳转
-          return;
+        if(document.body.classList.contains('pe-edit-active')){
+          e.preventDefault();
+          e.stopPropagation();
         }
-        // 编辑模式：阻止跳转
-        e.preventDefault();
-        e.stopPropagation();
       });
 
       // 编辑链接按钮
