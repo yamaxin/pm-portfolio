@@ -669,11 +669,17 @@ const PE = (() => {
       });
       // 同时清除 dataset 里的各种 init 标志
       // 清除所有增删初始化标志（camelCase dataset属性）
-      const initKeys = ['listInit','projInit','toolInit','thinkInit','careerInit',
-        'growthInit','ghGridInit','ghInit','tagInit','tagDelInit','protoInit'];
+      // 只清除"删除按钮注入"标志，不清除"新增按钮注入"标志
+      // 这样每次进入编辑模式会重新注入删除按钮（新增的卡片需要），但不会重复插入新增按钮
+      const delKeys = ['listInit','thinkInit','careerInit','growthInit','ghInit','tagInit','tagDelInit','protoInit'];
+      const cardDelKeys = ['projInit','toolInit'];
       document.querySelectorAll('*').forEach(el => {
-        initKeys.forEach(k => { if (el.dataset[k]) delete el.dataset[k]; });
+        delKeys.forEach(k => { if (el.dataset[k]) delete el.dataset[k]; });
+        // 卡片类：清除删除按钮标志但保留新增按钮标志
+        cardDelKeys.forEach(k => { if (el.dataset[k]) delete el.dataset[k]; });
       });
+      // 移除所有已有的删除按钮，重新注入（确保新增的卡片也有删除按钮）
+      // 新增按钮通过 data-pe-addbtn 去重，不受此影响
     }
     document.body.classList.toggle('pe-edit-active', active);
     document.getElementById('pe-toolbar').classList.toggle('is-editing', active);
@@ -753,7 +759,6 @@ const PE = (() => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        // 从页面的姓名字段动态读取，避免硬编码
         const nameEl = document.querySelector('[data-field="name"]');
         const personName = nameEl ? nameEl.textContent.trim() : '产品经理';
         a.download = personName + '-产品经理作品集.html';
@@ -938,6 +943,7 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 </script>
+
 
 ---
 
@@ -1144,7 +1150,15 @@ window.addEventListener('scroll', () => {
           container.appendChild(tpl);
           PE._toast('✅ 已添加，点击文字编辑');
         });
-        container.after(addBtn);
+        // 去重：先移除已有的同标签新增按钮
+    if(addBtn.dataset.peAddbtn){
+      const existing = container.parentNode
+        ? Array.from(container.parentNode.querySelectorAll('[data-pe-addbtn]'))
+            .filter(b => b.dataset.peAddbtn === addBtn.dataset.peAddbtn && b !== addBtn)
+        : [];
+      existing.forEach(b => b.remove());
+    }
+    container.after(addBtn);
       });
     });
   }
@@ -1202,6 +1216,14 @@ window.addEventListener('scroll', () => {
       PE._toast('✅ 已添加，点击文字编辑');
     });
     addBtn.style.margin = '16px 0 0';
+    // 去重：先移除已有的同标签新增按钮
+    if(addBtn.dataset.peAddbtn){
+      const existing = grid.parentNode
+        ? Array.from(grid.parentNode.querySelectorAll('[data-pe-addbtn]'))
+            .filter(b => b.dataset.peAddbtn === addBtn.dataset.peAddbtn && b !== addBtn)
+        : [];
+      existing.forEach(b => b.remove());
+    }
     grid.after(addBtn);
   }
 
@@ -1224,6 +1246,9 @@ window.addEventListener('scroll', () => {
   function makeAddBtn(label, onClick) {
     const btn = document.createElement('button');
     btn.className = 'pe-add-btn';
+    btn.type = 'button';
+    btn.setAttribute('contenteditable', 'false');
+    btn.setAttribute('data-pe-addbtn', label); // 用于去重
     btn.textContent = label;
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1249,8 +1274,8 @@ window.addEventListener('scroll', () => {
 
 </script>
 
-### 卡片级别增删系统
 
+### 卡片级别增删系
 <script>
 /* ── 卡片级别增删系统 ── */
 (function(){
@@ -1336,6 +1361,14 @@ window.addEventListener('scroll', () => {
       grid.appendChild(tpl);
       PE._toast('✅ 新工具卡片已添加');
     });
+    // 去重：先移除已有的同标签新增按钮
+    if(addBtn.dataset.peAddbtn){
+      const existing = grid.parentNode
+        ? Array.from(grid.parentNode.querySelectorAll('[data-pe-addbtn]'))
+            .filter(b => b.dataset.peAddbtn === addBtn.dataset.peAddbtn && b !== addBtn)
+        : [];
+      existing.forEach(b => b.remove());
+    }
     grid.after(addBtn);
   }
 
@@ -1366,6 +1399,14 @@ window.addEventListener('scroll', () => {
       grid.appendChild(tpl);
       PE._toast('✅ 新思考卡片已添加');
     });
+    // 去重：先移除已有的同标签新增按钮
+    if(addBtn.dataset.peAddbtn){
+      const existing = grid.parentNode
+        ? Array.from(grid.parentNode.querySelectorAll('[data-pe-addbtn]'))
+            .filter(b => b.dataset.peAddbtn === addBtn.dataset.peAddbtn && b !== addBtn)
+        : [];
+      existing.forEach(b => b.remove());
+    }
     grid.after(addBtn);
   }
 
@@ -1385,6 +1426,9 @@ window.addEventListener('scroll', () => {
   function makeCardAddBtn(label, onClick){
     const btn = document.createElement('button');
     btn.className = 'pe-card-add-btn';
+    btn.type = 'button';
+    btn.setAttribute('contenteditable', 'false');
+    btn.setAttribute('data-pe-addbtn', label); // 用于去重
     btn.textContent = label;
     btn.addEventListener('click', e=>{ e.stopPropagation(); onClick(); });
     return btn;
@@ -1408,6 +1452,7 @@ window.addEventListener('scroll', () => {
 })();
 
 </script>
+
 
 ### 原型区块删除
 
@@ -1464,9 +1509,9 @@ window.addEventListener('scroll', () => {
                font-size:14px;font-family:'DM Mono',monospace;outline:none;color:#1A2035;
                transition:border-color .2s;" />
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-        <button id="gh-url-cancel" style="padding:9px 20px;border:1.5px solid #e2e8f0;border-radius:8px;
+        <button type="button" id="gh-url-cancel" style="padding:9px 20px;border:1.5px solid #e2e8f0;border-radius:8px;
           background:#fff;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">取消</button>
-        <button id="gh-url-confirm" style="padding:9px 20px;border:none;border-radius:8px;
+        <button type="button" id="gh-url-confirm" style="padding:9px 20px;border:none;border-radius:8px;
           background:#4F6EF7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">确认</button>
       </div>
     </div>`;
@@ -1484,6 +1529,10 @@ window.addEventListener('scroll', () => {
     }
     dlg.style.display = 'none';
   };
+  document.getElementById('gh-url-input').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('gh-url-confirm').click(); }
+    if(e.key === 'Escape'){ e.preventDefault(); dlg.style.display = 'none'; }
+  });
   document.getElementById('gh-url-input').addEventListener('focus', function(){
     this.style.borderColor='#4F6EF7';
   });
@@ -1508,6 +1557,8 @@ window.addEventListener('scroll', () => {
       // 编辑链接按钮
       const editBtn = document.createElement('button');
       editBtn.className = 'gh-edit-url-btn';
+      editBtn.type = 'button';
+      editBtn.setAttribute('contenteditable', 'false');
       editBtn.textContent = '🔗 编辑链接';
       editBtn.addEventListener('click', e => {
         e.stopPropagation();
@@ -1531,6 +1582,7 @@ window.addEventListener('scroll', () => {
 })();
 
 </script>
+
 
 ### 开源项目增删
 
