@@ -41,6 +41,10 @@
 | 下载后增删失效 | toggle()开启编辑时必须清除所有dataset init标志（见PE主脚本）|
 | Market无增删 | initMarketCards内联实现删除逻辑，不依赖外部addDelBtn函数 |
 | GitHub点击跳转 | 编辑模式下click事件统一preventDefault，非编辑模式放行 |
+| 新增按钮不断叠加 | makeAddBtn/makeCardAddBtn加data-pe-addbtn标记，插入前先移除同名旧按钮 |
+| GitHub弹窗刷新页面 | 弹窗所有button加type="button"，input加keydown阻止Enter默认行为 |
+| 保存文件名错误 | 动态读取data-field="name"字段值作为文件名，禁止硬编码 |
+| 新用户数据被旧数据覆盖 | pe-saved-data初始值必须为 `{}`（空对象），不能带任何历史数据 |
 
 ---
 
@@ -654,6 +658,16 @@ const PE = (() => {
   // 开启 / 关闭编辑模式
   function toggle() {
     active = !active;
+    // 每次进入编辑模式，清除所有 init 标志，确保增删按钮重新注入
+    if (active) {
+      const initKeys = ['listInit','projInit','toolInit','thinkInit','careerInit',
+        'growthInit','ghGridInit','ghInit','tagInit','tagDelInit','protoInit'];
+      document.querySelectorAll('*').forEach(el => {
+        initKeys.forEach(k => { if (el.dataset[k]) delete el.dataset[k]; });
+      });
+      // 同时移除已有新增按钮，准备重新注入（保证新增卡片也获得删除按钮）
+      document.querySelectorAll('[data-pe-addbtn]').forEach(b => b.remove());
+    }
     // 每次进入编辑模式时，清除所有初始化标志，确保增删系统重新注入按钮
     if (active) {
       document.querySelectorAll('[data-list-init],[data-proj-init],[data-tool-init],[data-think-init],[data-career-init],[data-growth-init],[data-gh-grid-init],[data-tag-init],[data-proto-init]').forEach(el => {
@@ -944,8 +958,6 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 </script>
 
-
----
 
 ## 8. 图片上传脚本
 
