@@ -604,7 +604,9 @@ const PE = (() => {
             const savedName = (parsed.fields['name'] || '').replace(/<[^>]+>/g, '').trim();
             const htmlNameEl = document.querySelector('[data-field="name"]');
             const htmlName = htmlNameEl ? htmlNameEl.textContent.trim() : '';
-            const nameMatch = !savedName || !htmlName || savedName === htmlName;
+            // 若 HTML 里是占位符（新生成的模板），直接放行；否则校验一致性
+            const placeholders = ['姓名', '{{姓名}}', 'Name', ''];
+            const nameMatch = placeholders.includes(htmlName) || !savedName || savedName === htmlName;
             if (nameMatch) {
               savedFields = parsed.fields;
               savedImages = parsed.images || {};
@@ -628,7 +630,8 @@ const PE = (() => {
             const lsName = (lsParsed['name'] || '').replace(/<[^>]+>/g, '').trim();
             const htmlNameEl2 = document.querySelector('[data-field="name"]');
             const htmlName2 = htmlNameEl2 ? htmlNameEl2.textContent.trim() : '';
-            if (!lsName || !htmlName2 || lsName === htmlName2) {
+            const lsPlaceholders = ['姓名', '{{姓名}}', 'Name', ''];
+            if (lsPlaceholders.includes(htmlName2) || !lsName || lsName === htmlName2) {
               savedFields = lsParsed;
               console.log('PE: 从localStorage恢复', Object.keys(savedFields).length, '个字段');
             } else {
@@ -654,6 +657,20 @@ const PE = (() => {
           el.innerHTML = content;
         }
       });
+      // nav-brand 和 title 没有 data-field，单独同步
+      const nameVal = (savedFields['name'] || '').replace(/<[^>]+>/g, '').trim();
+      if (nameVal) {
+        const navBrand = document.querySelector('.nav-brand');
+        if (navBrand) {
+          const cur = navBrand.textContent.trim();
+          if (cur.includes('{{') || cur === '' || cur === nameVal + ' Portfolio') {
+            navBrand.textContent = nameVal + ' Portfolio';
+          }
+        }
+        if (document.title.includes('{{') || document.title.includes('姓名')) {
+          document.title = nameVal + ' · 产品经理作品集';
+        }
+      }
     }
 
     // 4. 应用恢复的图片
@@ -784,6 +801,13 @@ const PE = (() => {
 
     if (window.PE_LOCAL_MODE) {
       // ── 本地/Hermes模式：生成新HTML文件直接下载 ──
+      // 保存时同步更新 nav-brand 和 title
+      const saveName = (data['name'] || '').replace(/<[^>]+>/g, '').trim();
+      if (saveName) {
+        const nb = document.querySelector('.nav-brand');
+        if (nb) nb.textContent = saveName + ' Portfolio';
+        document.title = saveName + ' · 产品经理作品集';
+      }
       exitEdit();
       const fullHTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
       try {

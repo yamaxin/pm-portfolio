@@ -468,95 +468,24 @@
 ## GitHub卡片完整编辑系统
 
 <script>
-/* ── GitHub卡片完整编辑系统 ── */
+/* ── GitHub卡片编辑系统 ── */
 (function(){
-
-  // 链接编辑弹窗
-  const dlg = document.createElement('div');
-  dlg.id = 'gh-url-dlg';
-  dlg.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;';
-  dlg.innerHTML = `
-    <div style="background:#fff;border-radius:16px;padding:28px 32px;width:480px;max-width:90vw;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-      <div style="font-size:16px;font-weight:700;margin-bottom:6px;color:#1A2035;">编辑项目链接</div>
-      <div style="font-size:13px;color:#64748b;margin-bottom:20px;">修改 GitHub 仓库地址</div>
-      <input id="gh-url-input" type="text" placeholder="https://github.com/..."
-        style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;
-               font-size:14px;font-family:'DM Mono',monospace;outline:none;color:#1A2035;
-               transition:border-color .2s;" />
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-        <button type="button" id="gh-url-cancel" style="padding:9px 20px;border:1.5px solid #e2e8f0;border-radius:8px;
-          background:#fff;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">取消</button>
-        <button type="button" id="gh-url-confirm" style="padding:9px 20px;border:none;border-radius:8px;
-          background:#4F6EF7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">确认</button>
-      </div>
-    </div>`;
-  document.body.appendChild(dlg);
-
-  let currentCard = null;
-
-  document.getElementById('gh-url-cancel').onclick = () => { dlg.style.display = 'none'; };
-  document.getElementById('gh-url-confirm').onclick = () => {
-    const url = document.getElementById('gh-url-input').value.trim();
-    if(url && currentCard){
-      currentCard.setAttribute('href', url);
-      currentCard.setAttribute('data-gh-href', url);
-      PE._toast('✅ 链接已更新');
-    }
-    dlg.style.display = 'none';
-  };
-  document.getElementById('gh-url-input').addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('gh-url-confirm').click(); }
-    if(e.key === 'Escape'){ e.preventDefault(); dlg.style.display = 'none'; }
-  });
-  document.getElementById('gh-url-input').addEventListener('focus', function(){
-    this.style.borderColor='#4F6EF7';
-  });
-  document.getElementById('gh-url-input').addEventListener('blur', function(){
-    this.style.borderColor='#e2e8f0';
-  });
-
-  // 初始化每张 github-card
   function initGithubCards(){
-    document.querySelectorAll('.github-card').forEach(card => {
-      if(card.dataset.ghInit) return;
-      card.dataset.ghInit = '1';
-
-      // 编辑模式下阻止卡片跳转（文字仍可点击编辑）
-      card.addEventListener('click', function(e){
-        if(document.body.classList.contains('pe-edit-active')){
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      });
-
-      // 编辑链接按钮
-      const editBtn = document.createElement('button');
-      editBtn.className = 'gh-edit-url-btn';
-      editBtn.type = 'button';
-      editBtn.setAttribute('contenteditable', 'false');
-      editBtn.textContent = '🔗 编辑链接';
-      editBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        e.preventDefault();
-        currentCard = card;
-        document.getElementById('gh-url-input').value = card.getAttribute('data-gh-href') || card.getAttribute('href') || '';
-        dlg.style.display = 'flex';
-        setTimeout(()=>document.getElementById('gh-url-input').focus(), 50);
-      });
-      card.appendChild(editBtn);
+    document.querySelectorAll('.github-card').forEach(function(card){
+      if(card.dataset.ghInit === 'done') return;
+      card.dataset.ghInit = 'done';
+      // github-card 现已是 div，gh-name 字段直接编辑即为链接文字
     });
   }
 
-  // 监听编辑模式
-  const ob = new MutationObserver(()=>{
-    initGithubCards();
+  const ob = new MutationObserver(function(){
+    if(document.body.classList.contains('pe-edit-active')) initGithubCards();
   });
   ob.observe(document.body, {attributes:true, attributeFilter:['class']});
   window.addEventListener('DOMContentLoaded', initGithubCards);
-
 })();
-
 </script>
+
 
 ## 开源项目增删
 
@@ -568,53 +497,36 @@
     if(!grid || grid.dataset.ghGridInit) return;
     grid.dataset.ghGridInit = '1';
 
-    grid.querySelectorAll('.github-card').forEach(card => {
-      addGhDel(card);
-    });
+    grid.querySelectorAll('.github-card').forEach(function(card){ addGhDel(card); });
 
     const addBtn = document.createElement('button');
     addBtn.className = 'pe-card-add-btn';
+    addBtn.type = 'button';
+    addBtn.setAttribute('contenteditable', 'false');
+    addBtn.setAttribute('data-pe-addbtn', '+ 新增开源项目');
     addBtn.textContent = '+ 新增开源项目';
-    addBtn.addEventListener('click', e => {
+    addBtn.addEventListener('click', function(e){
       e.stopPropagation();
       const tpl = grid.querySelector('.github-card').cloneNode(true);
       const ts = Date.now();
-      tpl.setAttribute('href', '#');
-      tpl.setAttribute('data-gh-href', '#');
       tpl.dataset.ghInit = '';
-      tpl.querySelectorAll('[data-field]').forEach(el => {
+      // 清理旧按钮
+      tpl.querySelectorAll('.pe-card-del').forEach(function(b){ b.remove(); });
+      // 重置字段内容
+      tpl.querySelectorAll('[data-field]').forEach(function(el){
         el.textContent = '点击编辑';
         el.dataset.field = el.dataset.field + '_' + ts;
         if(document.body.classList.contains('pe-edit-active')){
-          el.setAttribute('contenteditable','true');
-          el.setAttribute('spellcheck','false');
+          el.setAttribute('contenteditable', 'true');
+          el.setAttribute('spellcheck', 'false');
         }
       });
-      tpl.querySelectorAll('.pe-card-del,.gh-edit-url-btn').forEach(b=>b.remove());
       addGhDel(tpl);
-      // 重新初始化编辑链接按钮
-      const editBtn = document.createElement('button');
-      editBtn.className = 'gh-edit-url-btn';
-      editBtn.type = 'button';
-      editBtn.setAttribute('contenteditable', 'false');
-      editBtn.textContent = '🔗 编辑链接';
-      editBtn.addEventListener('click', ev => {
-        ev.stopPropagation(); ev.preventDefault();
-        // 触发链接编辑
-        tpl.click();
-      });
-      tpl.appendChild(editBtn);
       grid.appendChild(tpl);
       PE._toast('✅ 新项目已添加，点击文字编辑');
     });
-    // 去重：先移除已有的同标签新增按钮
-    if(addBtn.dataset.peAddbtn){
-      const existing = grid.parentNode
-        ? Array.from(grid.parentNode.querySelectorAll('[data-pe-addbtn]'))
-            .filter(b => b.dataset.peAddbtn === addBtn.dataset.peAddbtn && b !== addBtn)
-        : [];
-      existing.forEach(b => b.remove());
-    }
+    // 去重
+    document.querySelectorAll('[data-pe-addbtn="+ 新增开源项目"]').forEach(function(b){ b.remove(); });
     grid.after(addBtn);
   }
 
@@ -622,23 +534,28 @@
     if(card.querySelector('.pe-card-del')) return;
     const btn = document.createElement('button');
     btn.className = 'pe-card-del';
+    btn.type = 'button';
+    btn.setAttribute('contenteditable', 'false');
     btn.innerHTML = '× 删除';
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', function(e){
       e.stopPropagation(); e.preventDefault();
       const grid = document.querySelector('.github-grid');
-      if(grid.querySelectorAll('.github-card').length > 1){ card.remove(); PE._toast('项目已删除'); }
-      else PE._toast('⚠️ 至少保留一个项目');
+      if(grid.querySelectorAll('.github-card').length > 1){
+        card.remove(); PE._toast('项目已删除');
+      } else {
+        PE._toast('⚠️ 至少保留一个项目');
+      }
     });
     card.appendChild(btn);
   }
 
-  const ob = new MutationObserver(()=>{
+  const ob = new MutationObserver(function(){
     if(document.body.classList.contains('pe-edit-active')) initGithubGrid();
   });
-  ob.observe(document.body,{attributes:true,attributeFilter:['class']});
+  ob.observe(document.body, {attributes:true, attributeFilter:['class']});
 })();
-
 </script>
+
 
 ## 职业轨迹+成长卡片增删
 
