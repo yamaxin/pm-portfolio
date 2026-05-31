@@ -45,7 +45,7 @@ a{color:inherit;text-decoration:none;}
 .reveal-d3{transition-delay:.24s;}.reveal-d4{transition-delay:.32s;}
 
 /* ─── HERO ─── */
-.hero{min-height:100vh;padding-top:60px;display:grid;grid-template-columns:1fr 1fr;align-items:center;background:linear-gradient(160deg,#EEF0FF 0%,#E5E9FF 40%,#EBF4FF 100%);position:relative;overflow:hidden;}
+.hero{min-height:0;padding-top:80px;padding-bottom:80px;display:grid;grid-template-columns:1fr 1fr;align-items:center;background:linear-gradient(160deg,#EEF0FF 0%,#E5E9FF 40%,#EBF4FF 100%);position:relative;overflow:hidden;}
 .hero::before{content:'PM';position:absolute;right:-20px;bottom:-40px;font-family:'Playfair Display',serif;font-size:380px;font-weight:800;color:rgba(37,99,235,.06);line-height:1;pointer-events:none;user-select:none;}
 .hero-left{padding:80px 56px 80px 48px;display:flex;flex-direction:column;gap:0;}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:28px;}
@@ -119,7 +119,6 @@ a{color:inherit;text-decoration:none;}
 .proto-header{padding-top:28px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);font-family:'DM Mono',monospace;margin-bottom:16px;}
 .proto-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .proto-frame{border-radius:10px;border:1px solid var(--rule);}
-.proto-cap{padding:10px 14px;font-size:12px;font-weight:500;color:var(--ink-3);border-top:1px solid var(--rule);background:var(--paper);}
 
 /* 诊断弹窗 */
 .mock-diag{background:#fff;}
@@ -280,6 +279,8 @@ a{color:inherit;text-decoration:none;}
 .pe-btn-save:hover  { background:rgba(255,255,255,.15); color:#fff; }
 .pe-btn-copy  { background:rgba(147,197,253,.15); color:#93c5fd; font-size:12px; border:1px solid rgba(147,197,253,.35); }
 .pe-btn-copy:hover  { background:rgba(147,197,253,.25); }
+.pe-btn-html  { background:rgba(255,255,255,.08); color:#aaa; font-size:12px; }
+.pe-btn-html:hover  { background:rgba(255,255,255,.15); color:#fff; }
 .pe-btn-pdf   { background:#fff; color:#111; }
 .pe-btn-pdf:hover   { background:#eff6ff; color:#2563eb; }
 
@@ -355,33 +356,80 @@ a{color:inherit;text-decoration:none;}
 
 /* 打印时隐藏所有编辑相关元素 */
 @media print {
-  /* 隐藏编辑相关元素 */
-  #pe-toolbar, #pe-toast,
-  .pe-del-btn, .pe-card-del, .pe-add-btn,
-  .pe-card-add-btn, .pe-tag-add-btn, .pe-tag-del,
-  .pe-proto-del,  { display: none !important; }
+  /* ① 页面设置 */
+  @page { margin: 12mm 14mm; size: A4; }
 
-  /* 清除编辑状态样式 */
-  [data-field]::after { display: none !important; }
-  [data-field] {
-    background: transparent !important;
-    box-shadow: none !important;
-    cursor: default !important;
-  }
-
-  /* 隐藏导航 */
-  nav.nav { display: none !important; }
-
-  /* 保留背景色（需要浏览器开启"背景图形"） */
+  /* ② 保留背景色 */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-  /* 分页控制 */
-  .proj { page-break-inside: avoid; break-inside: avoid; }
-  .section { page-break-before: auto; }
-  .hero { min-height: auto !important; padding-top: 20px !important; }
-  .section { padding: 48px 0 !important; }
+  /* ③ 隐藏所有编辑UI和导航 */
+  #pe-toolbar, #pe-toast, nav.nav,
+  .pe-del-btn, .pe-card-del, .pe-add-btn,
+  .pe-card-add-btn, .pe-tag-add-btn, .pe-tag-del,
+  .pe-proto-del { display: none !important; }
 
-  /* body 背景 */
+  /* ④ 清除编辑状态样式 */
+  [data-field]::after { display: none !important; }
+  [data-field] { background: transparent !important; box-shadow: none !important; cursor: default !important; }
+
+  /* ⑤ 修复内容顶格：wrap 保留水平内边距，不清零 */
+  .wrap { max-width: 100% !important; }
+
+  /* ⑥ 封面改单列，但 hero-left/right 保持内边距 */
+  .hero {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+    overflow: visible !important;
+  }
+  .hero-right {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    margin-top: 16px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* ⑦ section 间距收紧 */
+  .section { padding-top: 24px !important; padding-bottom: 24px !important; margin: 0 !important; }
+
+  /* ⑧ 末尾 career-section 去掉多余空白：
+     关键：去掉背景色，否则浏览器会为背景保留空间 */
+  .career-section {
+    background: transparent !important;
+    padding-bottom: 0 !important;
+  }
+  .growth-grid { margin-top: 20px !important; }
+  .career-timeline { margin-top: 20px !important; }
+
+  /* ⑨ 其他 section 背景保留但收紧 */
+  .projects-section { padding-bottom: 16px !important; }
+  .ai-section { padding-bottom: 16px !important; }
+  .market-section { padding-bottom: 16px !important; }
+
+  /* ⑩ 项目卡片：允许自然断页 */
+  .proj { break-inside: auto !important; page-break-inside: auto !important; }
+  .proj-head { break-inside: avoid; page-break-inside: avoid; }
+  .proj-outcome { break-inside: avoid; page-break-inside: avoid; }
+
+  /* ⑪ 其他小卡片防断页 */
+  .ai-tool-card, .thinking-card, .market-card,
+  .career-item, .growth-card, .github-card { page-break-inside: avoid; break-inside: avoid; }
+
+  /* ⑫ 收紧内联样式的大间距 */
+  [style*="margin-bottom:64px"] { margin-bottom: 16px !important; }
+  [style*="margin-bottom:56px"] { margin-bottom: 12px !important; }
+  [style*="margin-top:56px"] { margin-top: 16px !important; }
+  [style*="padding-bottom:48px"] { padding-bottom: 16px !important; }
+
+  /* ⑬ proto-img-slot：有图时高度自适应，无图由beforePrint JS压缩 */
+  .proto-img-slot { min-height: 0 !important; }
+  .proto-img-slot img { height: auto !important; max-height: 300px !important; object-fit: contain !important; }
+
+  /* ⑭ body背景 */
   body { background: #F4F6FF !important; }
 }
 
@@ -443,7 +491,7 @@ a{color:inherit;text-decoration:none;}
 .pe-edit-active .proto-img-slot:hover::after { opacity: 1; }
 /* 已有图片时，蒙层更透明 */
 .proto-img-slot.has-image {
-  min-height: unset;
+  min-height: 0;
   background: transparent;
 }
 .pe-edit-active .proto-img-slot.has-image::after {
@@ -704,7 +752,7 @@ if (window.PE_LOCAL_MODE) {
         <span data-field="quote" data-field-label="引用语" spellcheck="false">评语1！</span>
       </p>
       <div class="hero-quote-author">
-        <span data-field="quote-author" data-field-label="评价来源" spellcheck="false">— 研发工程师 A <br><br><span style="color: rgba(255, 255, 255, 0.88); font-family: &quot;DM Sans&quot;, sans-serif; font-size: 15px; font-style: italic; font-weight: 400; letter-spacing: normal;">评语2！<br></span>— 研发工程师 B</span>
+        <span data-field="quote-author" data-field-label="评价来源" spellcheck="false">— 评价来源</span>
       </div>
     </div>
     <div class="hero-tags reveal reveal-d2 in" data-tag-init="1">
@@ -788,20 +836,20 @@ if (window.PE_LOCAL_MODE) {
       <div class="proj-body">
         <div class="proj-col">
           <div class="proj-col-label" data-field="col_label_1" data-field-label="小节标题" spellcheck="false">背景 · 市场判断</div>
-          <p class="proj-col-text" data-field="p1-bg" data-field-label="背景" spellcheck="false"><span data-field="strong_1" data-field-label="重点文字" spellcheck="false">根据简历生成</span><strong data-field="strong_1" data-field-label="重点文字" spellcheck="false">。</strong></p>
+          <p class="proj-col-text" data-field="p1-bg" data-field-label="背景" spellcheck="false">根据简历生成</p>
           <div class="proj-col-label" data-field="col_label_2" data-field-label="小节标题" spellcheck="false">核心设计决策</div>
           <ul class="proj-steps" data-list-init="1" data-list="steps">
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_1" data-field-label="序号" spellcheck="false">1</div><div class="step-body"><strong data-field="p1-s1t" data-field-label="决策1标题" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p1-s1d" data-field-label="决策1说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_2" data-field-label="序号" spellcheck="false">2</div><div class="step-body"><strong data-field="p1-s2t" data-field-label="决策2标题" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p1-s2d" data-field-label="决策2说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_3" data-field-label="序号" spellcheck="false">3</div><div class="step-body"><strong data-field="p1-s3t" data-field-label="决策3标题" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p1-s3d" data-field-label="决策3说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_1" data-field-label="序号" spellcheck="false">1</div><div class="step-body"><strong data-field="p1-s1t" data-field-label="决策1标题" spellcheck="false">根据简历生成</strong><span data-field="p1-s1d" data-field-label="决策1说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_2" data-field-label="序号" spellcheck="false">2</div><div class="step-body"><strong data-field="p1-s2t" data-field-label="决策2标题" spellcheck="false">根据简历生成</strong><span data-field="p1-s2d" data-field-label="决策2说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_3" data-field-label="序号" spellcheck="false">3</div><div class="step-body"><strong data-field="p1-s3t" data-field-label="决策3标题" spellcheck="false">根据简历生成</strong><span data-field="p1-s3d" data-field-label="决策3说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
           </ul><button type="button" class="pe-add-btn">+ 添加步骤</button>
         </div>
         <div class="proj-col">
           <div class="proj-col-label" data-field="col_label_3" data-field-label="小节标题" spellcheck="false">产品功能范围</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;" data-list-init="1" data-list="features">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;border-left:3px solid var(--green);" data-deletable="1"><span style="font-size:10px;font-weight:700;color:var(--green);font-family:'DM Mono';min-width:22px;">P0</span><span style="font-size:13px;font-weight:600;" data-field="p1-p0" data-field-label="P0功能" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px; font-weight: 400;">根据简历生成</span></span><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></div>
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;border-left:3px solid #2563eb;" data-deletable="1"><span style="font-size:10px;font-weight:700;color:#2563eb;font-family:'DM Mono';min-width:22px;">P1</span><span style="font-size:13px;font-weight:600;" data-field="p1-p1" data-field-label="P1功能" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px; font-weight: 400;">根据简历生成</span></span><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></div>
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fafafa;border-radius:8px;border-left:3px solid #ddd;" data-deletable="1"><span style="font-size:10px;font-weight:700;color:#999;font-family:'DM Mono';min-width:22px;">P2</span><span style="font-size:13px;" data-field="p1-p2" data-field-label="P2功能" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;border-left:3px solid var(--green);" data-deletable="1"><span style="font-size:10px;font-weight:700;color:var(--green);font-family:'DM Mono';min-width:22px;">P0</span><span style="font-size:13px;font-weight:600;" data-field="p1-p0" data-field-label="P0功能" spellcheck="false">根据简历生成</span><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;border-left:3px solid #2563eb;" data-deletable="1"><span style="font-size:10px;font-weight:700;color:#2563eb;font-family:'DM Mono';min-width:22px;">P1</span><span style="font-size:13px;font-weight:600;" data-field="p1-p1" data-field-label="P1功能" spellcheck="false">根据简历生成</span><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fafafa;border-radius:8px;border-left:3px solid #ddd;" data-deletable="1"><span style="font-size:10px;font-weight:700;color:#999;font-family:'DM Mono';min-width:22px;">P2</span><span style="font-size:13px;" data-field="p1-p2" data-field-label="P2功能" spellcheck="false">根据简历生成</span><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></div>
           </div><button type="button" class="pe-add-btn">+ 添加功能项</button>
           <div class="proj-col-label" data-field="col_label_4" data-field-label="小节标题" spellcheck="false">竞品核心差异</div>
           <p class="proj-col-text" data-field="p1-diff" data-field-label="竞品差异" spellcheck="false">根据简历生成</p>
@@ -814,24 +862,22 @@ if (window.PE_LOCAL_MODE) {
             <div class="proto-img-slot" data-slot="p1-img1" data-field="p1-img1" data-field-label="原型图1" spellcheck="false">
               <div class="proto-placeholder">
                 <div class="proto-ph-icon">🖼</div>
-                <div class="proto-ph-text">AI助手界面截图</div>
+                <div class="proto-ph-text">点击上传截图</div>
                 <div class="proto-ph-hint">编辑模式下点击上传图片</div>
               </div>
             </div>
-            <div class="proto-cap" data-field="p1-cap1" data-field-label="图片说明1" spellcheck="false">AI助手</div>
           </div>
           <div class="proto-frame">
             <div class="proto-img-slot" data-slot="p1-img2" data-field="p1-img2" data-field-label="原型图2" spellcheck="false">
               <div class="proto-placeholder">
                 <div class="proto-ph-icon">🖼</div>
-                <div class="proto-ph-text">AI诊断界面截图</div>
+                <div class="proto-ph-text">点击上传截图</div>
                 <div class="proto-ph-hint">编辑模式下点击上传图片</div>
               </div>
             </div>
-            <div class="proto-cap" data-field="p1-cap2" data-field-label="图片说明2" spellcheck="false">AI诊断</div>
           </div>
         </div>
-      <button type="button" class="pe-proto-del" style="display: block;">× 删除原型区块</button></div>
+      <button type="button" class="pe-proto-del">× 删除原型区块</button></div>
       <div class="proj-outcome"><div class="outcome-icon">✦</div><div><div class="outcome-label" data-field="outcome_label_1" data-field-label="成果标题" spellcheck="false">预期成果</div><div class="outcome-text" data-field="p1-outcome" data-field-label="成果" spellcheck="false">根据简历生成</div></div></div>
     <button type="button" class="pe-card-del" title="删除此卡片" contenteditable="false">× 删除</button></div>
 
@@ -845,7 +891,7 @@ if (window.PE_LOCAL_MODE) {
     <div class="proj reveal in">
       <div class="proj-head">
         <div>
-          <div class="proj-badges" data-tag-init="1"><span class="badge badge-infra" data-field="p4-b1" data-field-label="标签" spellcheck="false" data-tag-del-init="1" style="position: relative;"><span style="color: rgb(55, 65, 81); font-family: &quot;DM Sans&quot;, sans-serif; font-size: 14px; font-weight: 400; letter-spacing: normal; text-transform: none;">根据简历生成</span><span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签" contenteditable="false">×</span></span><span class="badge badge-prd" data-field="p4-b2" data-field-label="标签" spellcheck="false" data-tag-del-init="1" style="position: relative;"><span style="color: rgb(55, 65, 81); font-family: &quot;DM Sans&quot;, sans-serif; font-size: 14px; font-weight: 400; letter-spacing: normal; text-transform: none;">根据简历生成</span><span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签" contenteditable="false">×</span></span><button type="button" class="pe-tag-add-btn">+ 标签</button></div>
+          <div class="proj-badges" data-tag-init="1"><span class="badge badge-infra" data-field="p4-b1" data-field-label="标签" spellcheck="false" data-tag-del-init="1" style="position: relative;">根据简历生成<span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签" contenteditable="false">×</span></span><span class="badge badge-prd" data-field="p4-b2" data-field-label="标签" spellcheck="false" data-tag-del-init="1" style="position: relative;">根据简历生成<span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签">×</span><span class="pe-tag-del" title="删除标签" contenteditable="false">×</span></span><button type="button" class="pe-tag-add-btn">+ 标签</button></div>
           <h3 class="proj-title" data-field="p4-title" data-field-label="项目标题" spellcheck="false">项目2</h3>
           <p class="proj-sub" data-field="p4-sub" data-field-label="项目描述" spellcheck="false">根据简历生成。</p>
           <div class="proj-metrics">
@@ -861,17 +907,17 @@ if (window.PE_LOCAL_MODE) {
           <p class="proj-col-text" data-field="p4-bg" data-field-label="背景" spellcheck="false">根据简历生成。</p>
           <div class="proj-col-label" data-field="col_label_12" data-field-label="小节标题" spellcheck="false">行业知识深度</div>
           <ul class="proj-steps" data-list-init="1" data-list="steps">
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_10" data-field-label="序号" spellcheck="false">↗</div><div class="step-body"><strong data-field="p4-k1t" data-field-label="知识点1" spellcheck="false">根据简历生成</strong><span data-field="p4-k1d" data-field-label="知识点1说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_11" data-field-label="序号" spellcheck="false">↗</div><div class="step-body"><strong data-field="p4-k2t" data-field-label="知识点2" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p4-k2d" data-field-label="知识点2说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_12" data-field-label="序号" spellcheck="false">↗</div><div class="step-body"><strong data-field="p4-k3t" data-field-label="知识点3" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p4-k3d" data-field-label="知识点3说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_10" data-field-label="序号" spellcheck="false">↗</div><div class="step-body"><strong data-field="p4-k1t" data-field-label="知识点1" spellcheck="false">根据简历生成</strong><span data-field="p4-k1d" data-field-label="知识点1说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_11" data-field-label="序号" spellcheck="false">↗</div><div class="step-body"><strong data-field="p4-k2t" data-field-label="知识点2" spellcheck="false">根据简历生成</strong><span data-field="p4-k2d" data-field-label="知识点2说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_12" data-field-label="序号" spellcheck="false">↗</div><div class="step-body"><strong data-field="p4-k3t" data-field-label="知识点3" spellcheck="false">根据简历生成</strong><span data-field="p4-k3d" data-field-label="知识点3说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
           </ul><button type="button" class="pe-add-btn">+ 添加步骤</button>
         </div>
         <div class="proj-col">
           <div class="proj-col-label" data-field="col_label_13" data-field-label="小节标题" spellcheck="false">策略 · 产品与团队管理</div>
           <ul class="proj-steps" data-list-init="1" data-list="steps">
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_13" data-field-label="序号" spellcheck="false">1</div><div class="step-body"><strong data-field="p4-s1t" data-field-label="策略1标题" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p4-s1d" data-field-label="策略1说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_14" data-field-label="序号" spellcheck="false">2</div><div class="step-body"><strong data-field="p4-s2t" data-field-label="策略2标题" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p4-s2d" data-field-label="策略2说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
-            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_15" data-field-label="序号" spellcheck="false">3</div><div class="step-body"><strong data-field="p4-s3t" data-field-label="策略3标题" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></strong><span data-field="p4-s3d" data-field-label="策略3说明" spellcheck="false"><span style="color: rgb(55, 65, 81); font-size: 14px;">根据简历生成</span></span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_13" data-field-label="序号" spellcheck="false">1</div><div class="step-body"><strong data-field="p4-s1t" data-field-label="策略1标题" spellcheck="false">根据简历生成</strong><span data-field="p4-s1d" data-field-label="策略1说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_14" data-field-label="序号" spellcheck="false">2</div><div class="step-body"><strong data-field="p4-s2t" data-field-label="策略2标题" spellcheck="false">根据简历生成</strong><span data-field="p4-s2d" data-field-label="策略2说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
+            <li class="proj-step" data-deletable="1"><div class="step-num" data-field="step_num_15" data-field-label="序号" spellcheck="false">3</div><div class="step-body"><strong data-field="p4-s3t" data-field-label="策略3标题" spellcheck="false">根据简历生成</strong><span data-field="p4-s3d" data-field-label="策略3说明" spellcheck="false">根据简历生成</span></div><button type="button" class="pe-del-btn" type="button" contenteditable="false" title="删除此项">×</button></li>
           </ul><button type="button" class="pe-add-btn">+ 添加步骤</button>
         </div>
       </div>
@@ -882,25 +928,23 @@ if (window.PE_LOCAL_MODE) {
             <div class="proto-img-slot" data-slot="p4-img1" data-field="p4-img1" data-field-label="原型图1" spellcheck="false">
               <div class="proto-placeholder">
                 <div class="proto-ph-icon">🖼</div>
-                <div class="proto-ph-text">IaaS产品界面截图</div>
+                <div class="proto-ph-text">点击上传截图</div>
                 <div class="proto-ph-hint">编辑模式下点击上传图片</div>
               </div>
             </div>
-            <div class="proto-cap" data-field="p4-cap1" data-field-label="图片说明1" spellcheck="false">IaaS产品界面截图</div>
           </div>
           <div class="proto-frame">
             <div class="proto-img-slot" data-slot="p4-img2" data-field="p4-img2" data-field-label="原型图2" spellcheck="false">
               <div class="proto-placeholder">
                 <div class="proto-ph-icon">🖼</div>
-                <div class="proto-ph-text">稳定性改造成果截图</div>
+                <div class="proto-ph-text">点击上传截图</div>
                 <div class="proto-ph-hint">编辑模式下点击上传图片</div>
               </div>
             </div>
-            <div class="proto-cap" data-field="p4-cap2" data-field-label="图片说明2" spellcheck="false">稳定性改造成果截图</div>
           </div>
         </div>
-      <button type="button" class="pe-proto-del" style="display: block;">× 删除原型区块</button></div>
-      <div class="proj-outcome"><div class="outcome-icon">✦</div><div><div class="outcome-label" data-field="outcome_label_4" data-field-label="成果标题" spellcheck="false">项目成果</div><div class="outcome-text" data-field="p4-outcome" data-field-label="成果" spellcheck="false"><span data-field="p4-k1t" data-field-label="知识点1" spellcheck="false" style="margin: 0px 0px 3px; display: block; font-size: 13px; font-weight: 600; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; box-shadow: rgba(26, 107, 74, 0.55) 0px 0px 0px 2px; color: rgb(26, 32, 53);">根据简历生成</span></div></div></div>
+      <button type="button" class="pe-proto-del">× 删除原型区块</button></div>
+      <div class="proj-outcome"><div class="outcome-icon">✦</div><div><div class="outcome-label" data-field="outcome_label_4" data-field-label="成果标题" spellcheck="false">项目成果</div><div class="outcome-text" data-field="p4-outcome" data-field-label="成果" spellcheck="false">根据简历生成</div></div></div>
     <button type="button" class="pe-card-del" title="删除此卡片" contenteditable="false">× 删除</button></div><button type="button" class="pe-card-add-btn">+ 新增项目卡片</button>
   </div>
 </section>
@@ -1091,6 +1135,7 @@ if (window.PE_LOCAL_MODE) {
   <button type="button" class="pe-btn pe-btn-save" id="pe-btn-save" style="display: none;" onclick="PE.save()" title="保存并下载新HTML文件">💾 保存文件</button>
   <button type="button" class="pe-btn pe-btn-copy" id="pe-btn-copy" style="display: none;" onclick="PE.copyCode()" title="复制完整HTML代码，粘贴到文本编辑器另存">📋 复制代码</button>
   <div class="pe-divider"></div>
+  <button type="button" class="pe-btn pe-btn-html" onclick="PE.exportHTML()" title="导出无编辑功能的纯展示HTML">🌐 导出 HTML</button>
   <button type="button" class="pe-btn pe-btn-pdf" onclick="PE.pdf()">📄 导出 PDF</button>
 </div>
 <div id="pe-toast" class="">标签已删除</div>
@@ -1107,7 +1152,10 @@ if (window.PE_LOCAL_MODE) {
 ═══════════════════════════════════════ */
 const PE = (() => {
   let active = false;
-  const STORE_KEY = 'pe_portfolio_v1';
+  // STORE_KEY 包含姓名，不同作品集不共享 localStorage，防止数据污染
+  const _nameEl = document.querySelector('[data-field="name"]');
+  const _nameForKey = _nameEl ? _nameEl.textContent.trim().replace(/\s/g,'') : 'unknown';
+  const STORE_KEY = 'pe_portfolio_v1_' + _nameForKey;
 
   // 初始化：多层次恢复策略
   // 优先级：pe-saved-data(内嵌) > localStorage > 原始HTML内容
@@ -1165,10 +1213,12 @@ const PE = (() => {
         }
       } catch(e) {}
     }
-    // 图片单独从 localStorage 读
+    // 图片单独从命名空间化的 localStorage key 读
     if (!savedImages) {
       try {
-        const imgRaw = localStorage.getItem('pe_images_v1');
+        const _n = document.querySelector('[data-field="name"]');
+        const _nk = _n ? _n.textContent.trim().replace(/\s/g,'') : 'unknown';
+        const imgRaw = localStorage.getItem('pe_images_v1_' + _nk);
         if (imgRaw) savedImages = JSON.parse(imgRaw);
       } catch(e) {}
     }
@@ -1305,7 +1355,9 @@ const PE = (() => {
     // 同时写入 localStorage
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(data));
-      localStorage.setItem('pe_images_v1', JSON.stringify(imgs));
+      const _sn = document.querySelector('[data-field="name"]');
+      const _snk = _sn ? _sn.textContent.trim().replace(/\s/g,'') : 'unknown';
+      localStorage.setItem('pe_images_v1_' + _snk, JSON.stringify(imgs));
     } catch(e) {}
 
     // 退出编辑模式
@@ -1353,7 +1405,7 @@ const PE = (() => {
     } else {
       // ── Claude.ai模式：localStorage保存，提示刷新恢复 ──
       exitEdit();
-      toast('✅ 内容已保存 — 刷新页面后自动恢复');
+      toast('✅ 内容已保存');
     }
   }
 
@@ -1415,9 +1467,12 @@ const PE = (() => {
     toolbar.style.display = 'none';
     toastEl.style.display = 'none';
 
+
     function restore() {
       toolbar.style.display = '';
       toastEl.style.display = '';
+      toastEl.style.visibility = '';
+
       if (wasActive) {
         document.body.classList.add('pe-edit-active');
         document.getElementById('pe-toolbar').classList.add('is-editing');
@@ -1435,29 +1490,107 @@ const PE = (() => {
       try {
         const { jsPDF } = window.jspdf;
         const body = document.body;
+
+        // Step1: 强制完成所有动画，确保元素位置稳定
+        document.querySelectorAll('.reveal').forEach(el => {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          el.style.transition = 'none';
+        });
+        // 等待一帧确保样式生效
+        await new Promise(r => requestAnimationFrame(r));
+
+        // 截图前隐藏 toast（避免出现在PDF里）
+        toastEl.style.visibility = 'hidden';
+        toastEl.classList.remove('show');
+
+        // Step2: 截图前收集元素坐标（在DOM状态稳定时，坐标最准确）
+        const noBreakSelectors = [
+          '.proj', '.career-item', '.thinking-card', '.ai-tool-card',
+          '.market-card', '.growth-card', '.proj-step',
+          '.proj-proto', '.github-card'
+        ].join(',');
+
+        // 用 getBoundingClientRect + scrollY，不依赖 offsetParent 链
+        // 相对于 body 顶部的 DOM 坐标（px）
+        const bodyRect = body.getBoundingClientRect();
+        const domRanges = Array.from(document.querySelectorAll(noBreakSelectors))
+          .map(el => {
+            const r = el.getBoundingClientRect();
+            const top = r.top - bodyRect.top;   // 相对 body 顶部的 DOM px
+            const bot = r.bottom - bodyRect.top;
+            return { top, bot, h: r.height };
+          })
+          .filter(r => r.h > 20); // 过滤极小元素
+
+        // Step3: 截整页为一张大图
         const canvas = await html2canvas(body, {
           scale: 2, useCORS: true, allowTaint: true,
           logging: false, backgroundColor: '#F4F6FF',
           width: body.scrollWidth, height: body.scrollHeight,
           scrollX: 0, scrollY: 0
         });
+
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
         const pageW = 210, pageH = 297;
+
+        // 两个不同用途的 scale：
+        // pxPerMm：用于 PDF 尺寸计算（canvas像素 → mm）
         const pxPerMm = canvas.width / pageW;
-        const pageHpx = pageH * pxPerMm;
-        const pages = Math.ceil(canvas.height / pageHpx);
-        for (let i = 0; i < pages; i++) {
+        const pageHpx = pageH * pxPerMm;          // A4高度对应的 canvas 像素数
+
+        // domToCanvas：DOM坐标 → canvas坐标（html2canvas scale=2，所以 canvas 是 DOM 的2倍）
+        const domToCanvas = canvas.width / body.scrollWidth;
+
+        // 把 DOM 坐标转换为 canvas 坐标
+        const noBreakRanges = domRanges
+          .map(r => ({
+            top: r.top * domToCanvas,
+            bot: r.bot * domToCanvas,
+            h:   r.h   * domToCanvas
+          }))
+          .filter(r => r.h < pageHpx * 0.85); // 超过页高85%的元素不做处理（无法避免截断）
+
+        // Step4: 智能计算切割点
+        const cuts = [0];
+        let curY = 0;
+        while (curY < canvas.height) {
+          let cutY = curY + pageHpx;
+          if (cutY >= canvas.height) { cuts.push(canvas.height); break; }
+
+          // 检查切割线是否落在某元素内部，若是则上移到元素顶部
+          let adjusted = cutY;
+          for (const r of noBreakRanges) {
+            // 条件：元素顶部在当前页 15% 之后，且被切割线截断
+            if (r.top > curY + pageHpx * 0.15 && r.top < cutY && r.bot > cutY) {
+              adjusted = Math.min(adjusted, r.top - 2 * pxPerMm); // 上移到元素顶部留2mm
+            }
+          }
+          // 安全：每页至少推进 15% 页高，防止死循环
+          if (adjusted < curY + pageHpx * 0.15) adjusted = curY + pageHpx;
+          cuts.push(adjusted);
+          curY = adjusted;
+        }
+
+        // Step5: 按切割点生成每页
+        for (let i = 0; i < cuts.length - 1; i++) {
           if (i > 0) doc.addPage();
-          const srcY = i * pageHpx;
-          const srcH = Math.min(pageHpx, canvas.height - srcY);
+          const srcY = Math.round(cuts[i]);
+          const srcH = Math.round(Math.min(cuts[i + 1] - cuts[i], canvas.height - srcY));
           const pc = document.createElement('canvas');
-          pc.width = canvas.width; pc.height = srcH;
-          pc.getContext('2d').drawImage(canvas, 0, -srcY);
-          doc.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, srcH / pxPerMm);
+          pc.width = canvas.width;
+          pc.height = Math.ceil(pageHpx);
+          const ctx = pc.getContext('2d');
+          ctx.fillStyle = '#F4F6FF';
+          ctx.fillRect(0, 0, pc.width, pc.height);
+          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+          doc.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, pageH);
         }
         const d = new Date();
         const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-        doc.save('\u6768\u7855-\u4ea7\u54c1\u7ecf\u7406\u4f5c\u54c1\u96c6-' + ds + '.pdf');
+        const pdfNameEl = document.querySelector('[data-field="name"]');
+        const pdfName = pdfNameEl ? pdfNameEl.textContent.trim() : '产品经理';
+        doc.save(pdfName + '-产品经理作品集-' + ds + '.pdf');
         toast('✅ PDF已生成并下载！');
       } catch(err) {
         console.error('PDF生成失败:', err);
@@ -1501,7 +1634,107 @@ const PE = (() => {
 
 
 
-  return { toggle, save, copyCode, pdf, _toast: toast };
+
+  // 导出纯展示HTML（移除所有编辑系统，只保留内容和样式）
+  function exportHTML() {
+    // 1. 先退出编辑模式，拿到干净状态
+    const wasActive = active;
+    if (wasActive) {
+      document.querySelectorAll('[data-field]').forEach(el => el.removeAttribute('contenteditable'));
+      document.body.classList.remove('pe-edit-active');
+    }
+
+    // 2. 克隆整个文档
+    const clone = document.documentElement.cloneNode(true);
+
+    // 3. 移除所有编辑相关script，只保留 PDF PRINT HANDLER
+    // 注意：用独有标记 '====== PDF PRINT HANDLER' 精确匹配，避免误判
+    const scripts = clone.querySelectorAll('script');
+    scripts.forEach(s => {
+      const content = s.textContent || '';
+      const src = s.getAttribute('src') || '';
+      // 精确保留：只有 id="pe-pdf-handler" 的PDF打印处理脚本
+      if (s.id === 'pe-pdf-handler') return;
+      // 其余全部删除（编辑系统、CDN外链、pe-saved-data、环境检测等）
+      s.remove();
+    });
+
+    // 4. 移除工具栏和toast
+    const toolbar = clone.querySelector('#pe-toolbar');
+    if (toolbar) toolbar.remove();
+    const toastEl = clone.querySelector('#pe-toast');
+    if (toastEl) toastEl.remove();
+
+    // 5. 移除所有编辑按钮
+    clone.querySelectorAll('.pe-del-btn, .pe-add-btn, .pe-card-del, .pe-card-add-btn, .pe-tag-del, .pe-tag-add-btn, .pe-proto-del').forEach(b => b.remove());
+
+    // 6. 清除编辑相关属性（保留内容，只移除功能属性）
+    clone.querySelectorAll('[data-field]').forEach(el => {
+      el.removeAttribute('data-field');
+      el.removeAttribute('data-field-label');
+      el.removeAttribute('spellcheck');
+      el.removeAttribute('contenteditable');
+    });
+    clone.querySelectorAll('[data-deletable]').forEach(el => el.removeAttribute('data-deletable'));
+    clone.querySelectorAll('[data-list]').forEach(el => el.removeAttribute('data-list'));
+    clone.querySelectorAll('[data-slot]').forEach(el => el.removeAttribute('data-slot'));
+    clone.querySelectorAll('[data-tag-init], [data-tag-del-init], [data-proto-init], [data-list-init]').forEach(el => {
+      el.removeAttribute('data-tag-init');
+      el.removeAttribute('data-tag-del-init');
+      el.removeAttribute('data-proto-init');
+      el.removeAttribute('data-list-init');
+    });
+
+    // 7. 移除编辑CSS块（EDITOR SYSTEM 到 RESPONSIVE 之间的CSS）
+    clone.querySelectorAll('style').forEach(styleEl => {
+      let css = styleEl.textContent;
+      // 移除 EDITOR SYSTEM CSS 块
+      css = css.replace(/\/\* ════+[\s\S]*?EDITOR SYSTEM[\s\S]*?═+[\s\S]*?\*\/[\s\S]*?\/\* ─── RESPONSIVE/, '/* ─── RESPONSIVE');
+      styleEl.textContent = css;
+    });
+
+    // 8. 恢复编辑状态
+    if (wasActive) {
+      document.body.classList.add('pe-edit-active');
+      document.querySelectorAll('[data-field]').forEach(el => {
+        el.setAttribute('contenteditable', 'true');
+        el.setAttribute('spellcheck', 'false');
+      });
+    }
+
+    // 9. 输出文件
+    const nameEl = document.querySelector('[data-field="name"]');
+    const personName = nameEl ? nameEl.textContent.trim() : '产品经理';
+    const finalHTML = '<!DOCTYPE html>\n' + clone.outerHTML;
+
+    if (window.PE_LOCAL_MODE) {
+      try {
+        const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = personName + '-产品经理作品集-final.html';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+        toast('✅ HTML已导出 — 纯展示版，无编辑功能');
+      } catch(e) {
+        fallbackCopy(finalHTML);
+        toast('📋 HTML已复制 → 粘贴到文本编辑器另存为 .html');
+      }
+    } else {
+      // Claude.ai 环境：复制到剪贴板
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(finalHTML)
+          .then(() => toast('📋 纯展示HTML已复制 → 粘贴到文本编辑器另存为 .html'))
+          .catch(() => fallbackCopy(finalHTML));
+      } else {
+        fallbackCopy(finalHTML);
+      }
+    }
+  }
+
+  return { toggle, save, copyCode, exportHTML, pdf, _toast: toast };
 })();
 
 /* ─── REVEAL ANIMATION ─── */
@@ -1526,7 +1759,10 @@ window.addEventListener('scroll', () => {
 <script>
 /* ── 原型图上传 ── */
 (function(){
-  const STORE_IMG = 'pe_images_v1';
+  // 图片key按姓名隔离，防止不同人的图片数据互相污染
+  const _imgNameEl = document.querySelector('[data-field="name"]');
+  const _imgNameKey = _imgNameEl ? _imgNameEl.textContent.trim().replace(/\s/g,'') : 'unknown';
+  const STORE_IMG = 'pe_images_v1_' + _imgNameKey;
 
   // 恢复已保存图片
   function restoreImages(){
@@ -1882,14 +2118,39 @@ window.addEventListener('scroll', () => {
       // 移除旧删除按钮，加新的
       tpl.querySelectorAll('.pe-card-del').forEach(b=>b.remove());
       addCardDel(tpl, ()=>{ tpl.remove(); PE._toast('项目已删除'); });
-      // 清空原型槽
+      // 清空原型槽，并清除 proto-init 标志让删除按钮可以重新绑定
       tpl.querySelectorAll('.proto-img-slot').forEach(slot=>{
         const img=slot.querySelector('img'); if(img) img.remove();
         const ph=slot.querySelector('.proto-placeholder'); if(ph) ph.style.display='';
         slot.classList.remove('has-image');
         slot.dataset.slot = slot.dataset.slot + '_new_' + Date.now();
       });
-      container.querySelector('.projects-intro').after(tpl);
+      // 清除原型区的旧按钮（无事件绑定）和init标志，让 initProtoDel 重新绑定
+      tpl.querySelectorAll('.proj-proto').forEach(proto=>{
+        delete proto.dataset.protoInit;
+        proto.querySelectorAll('.pe-proto-del').forEach(b=>b.remove());
+      });
+      const lastP = [...container.querySelectorAll('.proj')].at(-1);
+      if(lastP) lastP.after(tpl); else container.querySelector('.projects-intro').after(tpl);
+      // 新卡片加入DOM后，立即初始化原型区删除按钮（MutationObserver不会再次触发）
+      // 新卡片插入DOM后，直接注入删除按钮（编辑模式已激活，MutationObserver不会再次触发）
+      tpl.querySelectorAll('.proj-proto').forEach(function(proto){
+        if(proto.dataset.protoInit) return;
+        proto.dataset.protoInit = '1';
+        proto.style.position = 'relative';
+        var btn = document.createElement('button');
+        btn.className = 'pe-proto-del';
+        btn.type = 'button';
+        btn.setAttribute('contenteditable','false');
+        btn.innerHTML = '× 删除原型区块';
+        btn.style.display = 'block';
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          proto.remove();
+          PE._toast('原型区块已删除');
+        });
+        proto.appendChild(btn);
+      });
       tpl.scrollIntoView({behavior:'smooth',block:'center'});
       PE._toast('✅ 新项目卡片已添加，点击文字编辑');
     });
@@ -1990,7 +2251,7 @@ window.addEventListener('scroll', () => {
 
   // 辅助：卡片删除按钮（右上角，醒目）
   function addCardDel(card, onDel){
-    if(card.querySelector('.pe-card-del')) return;
+    card.querySelectorAll('.pe-card-del').forEach(b => b.remove());
     const btn = document.createElement('button');
     btn.className = 'pe-card-del';
     btn.type = 'button';
@@ -2063,6 +2324,8 @@ window.addEventListener('scroll', () => {
     }
   });
   ob3.observe(document.body,{attributes:true,attributeFilter:['class']});
+  // 暴露给外部调用（新增卡片时需要手动触发）
+  window._initProtoDel = initProtoDel;
 })();
 
 </script>
@@ -2084,17 +2347,7 @@ window.addEventListener('scroll', () => {
   window.addEventListener('DOMContentLoaded', initGithubCards);
 })();
 </script>
-      <div style="font-size:13px;color:#64748b;margin-bottom:20px;">修改 GitHub 仓库地址</div>
-      <input id="gh-url-input" type="text" placeholder="https://github.com/..." style="width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px;
-               font-size:14px;font-family:'DM Mono',monospace;outline:none;color:#1A2035;
-               transition:border-color .2s;">
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-        <button type="button" id="gh-url-cancel" style="padding:9px 20px;border:1.5px solid #e2e8f0;border-radius:8px;
-          background:#fff;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">取消</button>
-        <button type="button" id="gh-url-confirm" style="padding:9px 20px;border:none;border-radius:8px;
-          background:#4F6EF7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">确认</button>
-      </div>
-    </div></div>
+      
 <script>
 /* ── 开源项目增删 ── */
 (function(){
@@ -2137,7 +2390,7 @@ window.addEventListener('scroll', () => {
   }
 
   function addGhDel(card){
-    if(card.querySelector('.pe-card-del')) return;
+    card.querySelectorAll('.pe-card-del').forEach(b => b.remove());
     const btn = document.createElement('button');
     btn.className = 'pe-card-del';
     btn.type = 'button';
@@ -2199,7 +2452,7 @@ window.addEventListener('scroll', () => {
   }
 
   function addCareerDel(item, timeline){
-    if(item.querySelector('.pe-card-del')) return;
+    item.querySelectorAll('.pe-card-del').forEach(b => b.remove());
     const btn = document.createElement('button');
     btn.className = 'pe-card-del';
     btn.type = 'button';
@@ -2249,7 +2502,7 @@ window.addEventListener('scroll', () => {
   }
 
   function addGrowthDel(card, grid){
-    if(card.querySelector('.pe-card-del')) return;
+    card.querySelectorAll('.pe-card-del').forEach(b => b.remove());
     const btn = document.createElement('button');
     btn.className = 'pe-card-del';
     btn.type = 'button';
@@ -2346,6 +2599,42 @@ window.addEventListener('scroll', () => {
   ob.observe(document.body,{attributes:true,attributeFilter:['class']});
 })();
 
+</script>
+
+<script id="pe-pdf-handler">
+/* ====== PDF PRINT HANDLER — 不要修改此块 ====== */
+(function(){
+  function beforePrint(){
+    // 压缩空的原型图槽（不依赖:has选择器，全浏览器兼容）
+    document.querySelectorAll('.proto-img-slot').forEach(function(slot){
+      if(!slot.querySelector('img')){
+        slot.setAttribute('data-proto-was-empty','1');
+        slot.style.setProperty('min-height','0','important');
+        slot.style.setProperty('height','0','important');
+        slot.style.setProperty('padding','0','important');
+        slot.style.setProperty('border','none','important');
+        slot.style.setProperty('overflow','hidden','important');
+      }
+    });
+  }
+  function afterPrint(){
+    document.querySelectorAll('[data-proto-was-empty]').forEach(function(slot){
+      slot.removeAttribute('data-proto-was-empty');
+      slot.style.removeProperty('min-height');
+      slot.style.removeProperty('height');
+      slot.style.removeProperty('padding');
+      slot.style.removeProperty('border');
+      slot.style.removeProperty('overflow');
+    });
+  }
+  window.addEventListener('beforeprint', beforePrint);
+  window.addEventListener('afterprint', afterPrint);
+  if(window.matchMedia){
+    var mql = window.matchMedia('print');
+    if(mql.addListener){ mql.addListener(function(m){ m.matches ? beforePrint() : afterPrint(); }); }
+  }
+})();
+/* ====== END PDF PRINT HANDLER ====== */
 </script>
 
 

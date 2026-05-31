@@ -215,13 +215,19 @@
 
 /* 打印时隐藏所有编辑相关元素 */
 @media print {
-  /* 隐藏编辑相关元素 */
+  /* ① 页面设置 */
+  @page { margin: 0; size: A4; }
+
+  /* ② 保留背景色（用户需在打印对话框勾选"背景图形"） */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  /* ③ 隐藏所有编辑UI */
   #pe-toolbar, #pe-toast,
   .pe-del-btn, .pe-card-del, .pe-add-btn,
   .pe-card-add-btn, .pe-tag-add-btn, .pe-tag-del,
   .pe-proto-del, .gh-edit-url-btn, #gh-url-dlg { display: none !important; }
 
-  /* 清除编辑状态样式 */
+  /* ④ 清除编辑状态样式 */
   [data-field]::after { display: none !important; }
   [data-field] {
     background: transparent !important;
@@ -229,19 +235,33 @@
     cursor: default !important;
   }
 
-  /* 隐藏导航 */
+  /* ⑤ 隐藏导航 */
   nav.nav { display: none !important; }
 
-  /* 保留背景色（需要浏览器开启"背景图形"） */
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* ⑥ 封面：压缩高度，去掉min-height:100vh的大留白；封面后强制分页 */
+  .hero {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-top: 60px !important;
+    padding-bottom: 60px !important;
+    page-break-after: always;
+    break-after: page;
+  }
 
-  /* 分页控制 */
-  .proj { page-break-inside: avoid; break-inside: avoid; }
-  .section { page-break-before: auto; }
-  .hero { min-height: auto !important; padding-top: 20px !important; }
-  .section { padding: 48px 0 !important; }
+  /* ⑦ 卡片禁止内部断页（覆盖所有类型） */
+  .proj,
+  .ai-tool-card,
+  .thinking-card,
+  .market-card,
+  .career-item,
+  .growth-item { page-break-inside: avoid; break-inside: avoid; }
 
-  /* body 背景 */
+  /* ⑧ section间距收紧，去掉大段空白 */
+  .section { padding: 48px 0 !important; margin: 0 !important; }
+
+  /* ⑨ 空原型图槽：由 beforeprint JS处理（见第10节） */
+
+  /* ⑩ body背景 */
   body { background: #F4F6FF !important; }
 }
 
@@ -1094,3 +1114,55 @@ window.addEventListener('scroll', () => {
 - `/* ── 标签增删系统`
 
 从模板复制时注意：**每个脚本保持独立，禁止合并。**
+
+---
+
+## 10. PDF打印前处理脚本（必须作为独立script标签，放在所有其他script之后）
+
+**此脚本解决空原型图槽留白问题，原样复制，不要修改：**
+
+```html
+<script>
+/* ====== PDF PRINT HANDLER — 不要修改此块 ====== */
+(function(){
+  function beforePrint(){
+    // 压缩空的原型图槽（不依赖:has选择器，全浏览器兼容）
+    document.querySelectorAll('.proto-img-slot').forEach(function(slot){
+      if(!slot.querySelector('img')){
+        slot.setAttribute('data-proto-was-empty','1');
+        slot.style.setProperty('min-height','0','important');
+        slot.style.setProperty('height','0','important');
+        slot.style.setProperty('padding','0','important');
+        slot.style.setProperty('border','none','important');
+        slot.style.setProperty('overflow','hidden','important');
+      }
+    });
+  }
+  function afterPrint(){
+    // 打印完成后恢复
+    document.querySelectorAll('[data-proto-was-empty]').forEach(function(slot){
+      slot.removeAttribute('data-proto-was-empty');
+      slot.style.removeProperty('min-height');
+      slot.style.removeProperty('height');
+      slot.style.removeProperty('padding');
+      slot.style.removeProperty('border');
+      slot.style.removeProperty('overflow');
+    });
+  }
+  window.addEventListener('beforeprint', beforePrint);
+  window.addEventListener('afterprint', afterPrint);
+  // 兼容旧版Chrome（matchMedia方式）
+  if(window.matchMedia){
+    var mql = window.matchMedia('print');
+    if(mql.addListener){ mql.addListener(function(m){ m.matches ? beforePrint() : afterPrint(); }); }
+  }
+})();
+/* ====== END PDF PRINT HANDLER ====== */
+</script>
+```
+
+**说明：**
+- `beforeprint` 在用户触发打印/导出PDF前自动执行，把空的原型图槽高度压缩为0
+- `afterprint` 在打印完成后自动恢复，不影响正常浏览
+- 不依赖 CSS4 `:has()` 选择器，兼容所有浏览器版本
+- 不修改任何编辑系统状态，与11个script标签完全独立
